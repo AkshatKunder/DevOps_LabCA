@@ -1,0 +1,44 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Quiz - {{ topic }}</title>
+    <link rel="stylesheet" href="/static/css/style.css">
+</head>
+<body>
+    <header>
+        <h1>Topic: {{ topic }}</h1>
+        <nav>
+            <a href="/">Home</a>
+        </nav>
+    </header>
+    <main>
+        <h2>{{ difficulty }} Difficulty — Answer all questions</h2>
+        <form action="/result" method="POST">
+            {% for question in quiz %}
+                <div class="question-card">
+                    <h3>{{ loop.index }}. {{ question.question }}</h3>
+                    {% for option in question.options %}
+                        <label class="option-label">
+                            <input
+                                type="radio"
+                                name="question_{{ loop.index0 }}"
+                                value="{{ loop.index0 }}"
+                                required
+                            >
+                            {{ option }}
+                        </label>
+                        <br>
+                    {% endfor %}
+                </div>
+            {% endfor %}
+            <br>
+            <button type="submit">Submit Quiz</button>
+        </form>
+    </main>
+    <footer>
+        <p>&copy; 2026 DevOps Theory IA</p>
+    </footer>
+</body>
+</html>

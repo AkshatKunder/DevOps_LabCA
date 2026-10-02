@@ -1,0 +1,36 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Quiz Result</title>
+    <link rel="stylesheet" href="/static/css/style.css">
+</head>
+<body>
+    <header>
+        <h1>Quiz Completed</h1>
+        <nav>
+            <a href="/">Try Another Quiz</a>
+        </nav>
+    </header>
+    <main>
+        <section class="score-card">
+            <h2>Score: {{ score }} / {{ total }}</h2>
+            <p>Percentage: {{ percentage }}%</p>
+        </section>
+        <section>
+            {% for result in results %}
+                <div class="question-result">
+                    <h3>{{ loop.index }}. {{ result.question }}</h3>
+                    <p><strong>Your answer:</strong> {{ result.user_answer_text }}</p>
+                    <p><strong>Correct answer:</strong> {{ result.correct_answer_text }}</p>
+                    <p><em>Explanation:</em> {{ result.explanation }}</p>
+                </div>
+            {% endfor %}
+        </section>
+    </main>
+    <footer>
+        <p>&copy; 2026 DevOps Theory IA</p>
+    </footer>
+</body>
+</html>

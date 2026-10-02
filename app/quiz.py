@@ -1,0 +1,1 @@
+"""Quiz logic for the DevOps Theory IA application."""

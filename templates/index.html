@@ -1,0 +1,42 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AI Quiz Generator</title>
+    <link rel="stylesheet" href="/static/css/style.css">
+</head>
+<body>
+    <header>
+        <h1>AI-Powered Online Quiz</h1>
+    </header>
+    <main>
+        <h2>Generate your quiz</h2>
+        <p>Enter a topic below and AI will generate a quiz for you.</p>
+
+        <form action="/generate" method="POST">
+            <label for="topic">Enter Topic:</label>
+            <input
+                type="text"
+                id="topic"
+                name="topic"
+                placeholder="e.g. Operating Systems"
+                required
+            >
+
+            <br><br>
+
+            <label for="difficulty">Difficulty:</label>
+            <select id="difficulty" name="difficulty">
+                <option value="Easy">Easy</option>
+                <option value="Medium">Medium</option>
+                <option value="Hard">Hard</option>
+            </select>
+
+            <br><br>
+
+            <button type="submit">Generate Quiz</button>
+        </form>
+    </main>
+</body>
+</html>
