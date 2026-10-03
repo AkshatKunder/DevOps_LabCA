@@ -11,13 +11,13 @@ pipeline {
 
         stage('Build') {
             steps {
-                bat 'pip install -r requirements.txt'
+                bat '"D:\\Aaryan\\anaconda\\python.exe" -m pip install -r requirements.txt'
             }
         }
 
         stage('Test') {
             steps {
-                bat 'python -m pytest tests/'
+                bat '"D:\\Aaryan\\anaconda\\python.exe" -m pytest tests/'
             }
         }
 
