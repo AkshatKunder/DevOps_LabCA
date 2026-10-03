@@ -9,17 +9,17 @@ pipeline {
 
     stages {
 
-        stage('Build') {
-            steps {
-                bat '"D:\\Aaryan\\anaconda\\python.exe" -m pip install -r requirements.txt'
-            }
-        }
+       stage('Build') {
+    steps {
+        bat '"C:\\Users\\aksha\\AppData\\Local\\Programs\\Python\\Python311\\python.exe" -m pip install -r requirements.txt'
+    }
+}
 
-        stage('Test') {
-            steps {
-                bat '"D:\\Aaryan\\anaconda\\python.exe" -m pytest tests/'
-            }
-        }
+stage('Test') {
+    steps {
+        bat '"C:\\Users\\aksha\\AppData\\Local\\Programs\\Python\\Python311\\python.exe" -m pytest tests/'
+    }
+}
 
         stage('Docker Build') {
             steps {
