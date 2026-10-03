@@ -2,6 +2,7 @@
 
 All tests use pytest and mock Gemini, so no real API quota is consumed.
 """
+from markupsafe import escape
 from unittest.mock import patch
 
 import pytest
@@ -82,9 +83,12 @@ def test_generate_generates_quiz(mock_generate_quiz, client):
         "/generate", data={"topic": "Operating Systems", "difficulty": "Medium"}
     )
     assert response.status_code == 200
-    # The quiz page should list the 5 generated questions.
+    # The quiz page should list the 5 generated questions. Jinja2 autoescapes
+    # apostrophes as &#39;, so compare against the escaped question text.
+    response_text = response.data.decode("utf-8")
     for item in SAMPLE_QUIZ:
-        assert item["question"] in response.data.decode("utf-8")
+        expected = escape(item["question"])
+        assert expected in response_text
 
 
 @patch("app.routes.generate_quiz")
@@ -156,7 +160,7 @@ def test_quiz_has_radio_buttons(mock_generate_quiz, client):
 
     response_text = response.data.decode("utf-8")
     # Should have 5 * 4 = 20 radio inputs.
-    assert response_text.count('<input type="radio"') == 20
+    assert response_text.count('type="radio"') == 20
 
 
 def test_result_without_session_redirects(client):

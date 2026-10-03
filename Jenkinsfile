@@ -2,7 +2,9 @@ pipeline {
     agent any
 
     environment {
-        dockerImage = 'python:3.11-slim'
+        IMAGE_NAME = 'devops-theory-ia-quiz'
+        CONTAINER_NAME = 'devops-theory-ia-quiz'
+        GEMINI_API_KEY = credentials('GEMINI_API_KEY')
     }
 
     stages {
@@ -18,9 +20,22 @@ pipeline {
             }
         }
 
+        stage('Docker Build') {
+            steps {
+                sh 'docker build -t ${IMAGE_NAME}:${BUILD_NUMBER} -t ${IMAGE_NAME}:latest .'
+            }
+        }
+
         stage('Deploy') {
             steps {
-                sh 'python run.py'
+                sh '''
+                    docker rm -f ${CONTAINER_NAME} || true
+                    docker run -d \
+                        --name ${CONTAINER_NAME} \
+                        -p 5000:5000 \
+                        -e GEMINI_API_KEY=${GEMINI_API_KEY} \
+                        ${IMAGE_NAME}:latest
+                '''
             }
         }
     }

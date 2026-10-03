@@ -7,17 +7,25 @@ import os
 # Load environment variables from .env
 load_dotenv()
 
-API_KEY = os.getenv("GEMINI_API_KEY")
-if not API_KEY:
-    raise ValueError(
-        "GEMINI_API_KEY is not configured. Please set it in your .env file."
-    )
-
-# Initialize the Gemini client using the official google-genai SDK
-CLIENT = genai.Client(api_key=API_KEY)
-
 # Use the Gemini Flash-Lite model available on the free tier
 MODEL = "gemini-2.0-flash-lite-001"
+
+_CLIENT = None
+
+
+def _get_client():
+    """Lazily create the Gemini client so importing this module (and
+    running the test suite, which mocks generate_quiz) never requires
+    GEMINI_API_KEY to be set."""
+    global _CLIENT
+    if _CLIENT is None:
+        api_key = os.getenv("GEMINI_API_KEY")
+        if not api_key:
+            raise ValueError(
+                "GEMINI_API_KEY is not configured. Please set it in your .env file."
+            )
+        _CLIENT = genai.Client(api_key=api_key)
+    return _CLIENT
 
 
 def generate_quiz(topic, difficulty, number_of_questions=5):
@@ -51,7 +59,7 @@ def generate_quiz(topic, difficulty, number_of_questions=5):
     )
 
     # Call the Gemini API
-    response = CLIENT.models.generate_content(
+    response = _get_client().models.generate_content(
         model=MODEL,
         contents=prompt,
         generation_config={"response_mime_type": "application/json"},
