@@ -8,33 +8,34 @@ pipeline {
     }
 
     stages {
+
         stage('Build') {
             steps {
-                sh 'pip install -r requirements.txt'
+                bat 'pip install -r requirements.txt'
             }
         }
 
         stage('Test') {
             steps {
-                sh 'python -m pytest tests/'
+                bat 'python -m pytest tests/'
             }
         }
 
         stage('Docker Build') {
             steps {
-                sh 'docker build -t ${IMAGE_NAME}:${BUILD_NUMBER} -t ${IMAGE_NAME}:latest .'
+                bat 'docker build -t %IMAGE_NAME%:%BUILD_NUMBER% -t %IMAGE_NAME%:latest .'
             }
         }
 
         stage('Deploy') {
             steps {
-                sh '''
-                    docker rm -f ${CONTAINER_NAME} || true
-                    docker run -d \
-                        --name ${CONTAINER_NAME} \
-                        -p 5000:5000 \
-                        -e GEMINI_API_KEY=${GEMINI_API_KEY} \
-                        ${IMAGE_NAME}:latest
+                bat '''
+                    docker rm -f %CONTAINER_NAME% || exit /b 0
+                    docker run -d ^
+                        --name %CONTAINER_NAME% ^
+                        -p 5000:5000 ^
+                        -e GEMINI_API_KEY=%GEMINI_API_KEY% ^
+                        %IMAGE_NAME%:latest
                 '''
             }
         }

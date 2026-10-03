@@ -8,7 +8,7 @@ import os
 load_dotenv()
 
 # Use the Gemini Flash-Lite model available on the free tier
-MODEL = "gemini-2.0-flash-lite-001"
+MODEL = "gemini-3.5-flash-lite"
 
 _CLIENT = None
 
@@ -62,7 +62,7 @@ def generate_quiz(topic, difficulty, number_of_questions=5):
     response = _get_client().models.generate_content(
         model=MODEL,
         contents=prompt,
-        generation_config={"response_mime_type": "application/json"},
+        config={"response_mime_type": "application/json"},
     )
 
     raw_text = response.candidates[0].content.parts[0].text.strip()
