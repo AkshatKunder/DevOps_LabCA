@@ -1,43 +1,129 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Quiz - {{ topic }}</title>
-    <link rel="stylesheet" href="/static/css/style.css">
-</head>
-<body>
-    <header>
-        <h1>Topic: {{ topic }}</h1>
-        <nav>
-            <a href="/">Home</a>
-        </nav>
-    </header>
-    <main>
-        <h2>{{ difficulty }} Difficulty — Answer all questions</h2>
-        <form action="/result" method="POST">
-            {% for question in quiz %}
-                {% set question_index = loop.index0 %}
-                <div class="question-card">
-                    <h3>{{ loop.index }}. {{ question.question }}</h3>
-                    {% for option in question.options %}
-                        <label class="option">
-                            <input
-                                type="radio"
-                                name="question_{{ question_index }}"
-                                value="{{ loop.index0 }}"
-                                required
-                            >
-                            {{ option }}
-                        </label>
-                    {% endfor %}
-                </div>
-            {% endfor %}
-            <button type="submit" class="submit-quiz">Submit Quiz</button>
-        </form>
-    </main>
-    <footer>
-        <p>&copy; 2026 DevOps Theory IA</p>
-    </footer>
-</body>
-</html>
+{% extends "base.html" %}
+
+{% block title %}Quiz: {{ topic }} | DevOps Academy{% endblock %}
+{% block page_title %}{{ topic }}{% endblock %}
+{% block breadcrumb %}Topics &amp; Quiz / Active Quiz{% endblock %}
+
+{% block content %}
+
+<div class="quiz-container">
+
+  <!-- Quiz header card (progress) -->
+  <div class="quiz-header-card">
+    <div class="quiz-meta">
+      <div class="quiz-title-group">
+        <div class="quiz-page-title">{{ topic }}</div>
+        <div class="quiz-subtitle">
+          {% if difficulty == "Easy" %}🌱{% elif difficulty == "Medium" %}⚡{% else %}🔥{% endif %}
+          {{ difficulty }} Difficulty &nbsp;·&nbsp;
+          <span class="badge badge-primary">AI-Generated</span>
+        </div>
+      </div>
+      <span class="quiz-progress-text" id="progressLabel" aria-live="polite">
+        {{ quiz | length }} Questions
+      </span>
+    </div>
+    <!-- Progress bar (filled with JS as user answers) -->
+    <div class="progress-bar-track" role="progressbar" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0" id="progressBar" aria-label="Quiz completion progress">
+      <div class="progress-bar-fill" id="progressFill" style="width: 0%;"></div>
+    </div>
+  </div>
+
+  <!-- Quiz form -->
+  <form action="/result" method="POST" id="resultForm" novalidate>
+
+    {% for question in quiz %}
+      {% set question_index = loop.index0 %}
+      <div class="question-card" id="question-{{ question_index }}">
+
+        <div class="question-number">Question {{ loop.index }} of {{ quiz | length }}</div>
+        <h2 class="question-text">{{ question.question }}</h2>
+
+        <fieldset class="options-list" aria-label="Answer options for question {{ loop.index }}">
+          <legend class="visually-hidden">Choose your answer for: {{ question.question }}</legend>
+
+          {% for option in question.options %}
+          <div class="option">
+            <input
+              type="radio"
+              id="q{{ question_index }}_opt{{ loop.index0 }}"
+              name="question_{{ question_index }}"
+              value="{{ loop.index0 }}"
+              required
+            >
+            <label class="option-label" for="q{{ question_index }}_opt{{ loop.index0 }}">
+              <span class="option-letter" aria-hidden="true">{{ ["A","B","C","D"][loop.index0] }}</span>
+              <span class="option-text">{{ option }}</span>
+            </label>
+          </div>
+          {% endfor %}
+
+        </fieldset>
+      </div>
+    {% endfor %}
+
+    <!-- Quiz actions bar -->
+    <div class="quiz-actions">
+      <div class="quiz-validation-msg" id="validationMsg" role="alert">
+        <!-- AlertCircle icon -->
+        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+          <circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/>
+        </svg>
+        Please answer all questions before submitting.
+      </div>
+
+      <a href="{{ url_for('main.home') }}" class="btn btn-ghost">
+        <!-- ArrowLeft icon -->
+        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+          <line x1="19" y1="12" x2="5" y2="12"/><polyline points="12 19 5 12 12 5"/>
+        </svg>
+        Back to Topics
+      </a>
+
+      <button type="submit" class="btn btn-primary btn-lg" id="submitQuizBtn">
+        <!-- CheckSquare icon -->
+        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+          <polyline points="9 11 12 14 22 4"/>
+          <path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/>
+        </svg>
+        Submit Quiz
+      </button>
+    </div>
+
+  </form>
+
+</div><!-- /quiz-container -->
+
+{% endblock %}
+
+{% block extra_js %}
+<script>
+  // Progress bar: update as user selects answers
+  (function () {
+    const total = {{ quiz | length }};
+    const fill  = document.getElementById('progressFill');
+    const bar   = document.getElementById('progressBar');
+    const label = document.getElementById('progressLabel');
+
+    function updateProgress() {
+      let answered = 0;
+      for (let i = 0; i < total; i++) {
+        const inputs = document.querySelectorAll('input[name="question_' + i + '"]');
+        if (Array.from(inputs).some(function(r){ return r.checked; })) answered++;
+      }
+      const pct = Math.round((answered / total) * 100);
+      fill.style.width = pct + '%';
+      bar.setAttribute('aria-valuenow', pct);
+      label.textContent = answered + ' / ' + total + ' answered';
+    }
+
+    // Attach change listeners to all radio inputs in the form
+    const form = document.getElementById('resultForm');
+    if (form) {
+      form.querySelectorAll('input').forEach(function(r) {
+        r.addEventListener('change', updateProgress);
+      });
+    }
+  }());
+</script>
+{% endblock %}
