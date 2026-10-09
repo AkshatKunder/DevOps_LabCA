@@ -3,8 +3,8 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <meta name="description" content="DevOps Academy — AI-powered quiz platform for mastering DevOps concepts.">
-  <title>{% block title %}DevOps Academy{% endblock %}</title>
+  <meta name="description" content="QuizGenius — AI-powered quizzes for mastering DevOps concepts.">
+  <title>{% block title %}QuizGenius{% endblock %}</title>
   <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
   <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>⚡</text></svg>">
 </head>
@@ -27,8 +27,8 @@
         </svg>
       </div>
       <div class="sidebar-logo-text">
-        <span class="sidebar-logo-title">DevOps Academy</span>
-        <span class="sidebar-logo-sub">Theory IA</span>
+        <span class="sidebar-logo-title">QuizGenius</span>
+        <span class="sidebar-logo-sub">AI Quiz Studio</span>
       </div>
     </div>
 
@@ -108,7 +108,7 @@
           </svg>
         </button>
         <span class="topbar-title">{% block page_title %}Dashboard{% endblock %}</span>
-        <span class="topbar-breadcrumb">DevOps Academy / {% block breadcrumb %}Home{% endblock %}</span>
+        <span class="topbar-breadcrumb">QuizGenius / {% block breadcrumb %}Home{% endblock %}</span>
       </div>
       <div class="topbar-right">
         {% block topbar_actions %}{% endblock %}

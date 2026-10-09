@@ -1,5 +1,5 @@
 /* ============================================================
-   DevOps Academy — Premium SaaS Design System
+   QuizGenius — Premium SaaS Design System
    ============================================================ */
 
 /* ── Google Fonts ─────────────────────────────────────────── */
@@ -1644,4 +1644,55 @@ select.form-control {
     animation-duration: .01ms !important;
     transition-duration: .01ms !important;
   }
+}
+
+/* ── QuizGenius brand polish ─────────────────────────────── */
+::selection {
+  background: var(--primary-light);
+  color: var(--primary-hover);
+}
+
+.sidebar-logo-icon {
+  background: linear-gradient(135deg, #2563EB, #7C3AED);
+  box-shadow: 0 8px 18px rgba(79, 70, 229, .32);
+}
+
+.sidebar-logo-title {
+  letter-spacing: -.03em;
+}
+
+.quiz-setup-hero,
+.auth-card-top,
+.welcome-banner {
+  position: relative;
+  overflow: hidden;
+}
+
+.quiz-setup-hero::before,
+.auth-card-top::before,
+.welcome-banner::before {
+  content: "";
+  position: absolute;
+  width: 260px;
+  height: 260px;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, .1);
+  top: -150px;
+  right: -70px;
+  pointer-events: none;
+}
+
+.quiz-setup-hero > *,
+.auth-card-top > *,
+.welcome-banner > * {
+  position: relative;
+  z-index: 1;
+}
+
+.btn:focus-visible,
+.nav-item:focus-visible,
+.topic-chip:focus-visible,
+.form-control:focus-visible {
+  outline: 3px solid rgba(79, 70, 229, .35);
+  outline-offset: 3px;
 }

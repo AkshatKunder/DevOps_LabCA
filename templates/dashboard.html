@@ -1,6 +1,6 @@
 {% extends "base.html" %}
 
-{% block title %}Dashboard | DevOps Academy{% endblock %}
+{% block title %}Dashboard | QuizGenius{% endblock %}
 {% block page_title %}Dashboard{% endblock %}
 {% block breadcrumb %}Dashboard{% endblock %}
 
@@ -22,7 +22,7 @@
     <p class="welcome-eyebrow">👋 Welcome back</p>
     <h1 class="welcome-title">Ready to level up,<br>{{ current_user.username }}?</h1>
     <p class="welcome-desc">
-      Test your DevOps knowledge with AI-generated quizzes. Pick a topic, choose your difficulty, and start learning.
+      Build DevOps confidence with AI-generated quizzes. Pick a topic, choose your difficulty, and start learning.
     </p>
     <div class="welcome-actions">
       <a href="{{ url_for('main.home') }}" class="btn btn-white btn-lg">
@@ -194,7 +194,7 @@
           </svg>
         </div>
         <h3 class="empty-state-title">No quiz history yet</h3>
-        <p class="empty-state-desc">Take your first AI-generated quiz to start tracking your progress across DevOps topics.</p>
+        <p class="empty-state-desc">Take your first QuizGenius quiz to start tracking your progress across DevOps topics.</p>
         <a href="{{ url_for('main.home') }}" class="btn btn-primary btn-lg">
           <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
             <polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/>
