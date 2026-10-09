@@ -1,0 +1,67 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>My Dashboard | AI Quiz</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+</head>
+<body>
+    <header class="dashboard-header">
+        <h1>My Quiz Dashboard</h1>
+        <nav>
+            <a href="{{ url_for('main.home') }}">Home</a>
+            <form method="POST" action="{{ url_for('auth.logout') }}">
+                <button type="submit">Logout</button>
+            </form>
+        </nav>
+    </header>
+
+    <main class="dashboard-container">
+        <section class="dashboard-stats">
+            <div class="stat-card">
+                <h2>{{ total_attempts }}</h2>
+                <p>Total Quizzes Attempted</p>
+            </div>
+
+            <div class="stat-card">
+                <h2>{{ average_percentage }}%</h2>
+                <p>Average Score</p>
+            </div>
+        </section>
+
+        <h2>My Quiz History</h2>
+
+        {% if attempts %}
+        <div class="table-wrapper">
+            <table class="history-table">
+                <thead>
+                    <tr>
+                        <th>Topic</th>
+                        <th>Difficulty</th>
+                        <th>Score</th>
+                        <th>Percentage</th>
+                        <th>Attempt Date</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for attempt in attempts %}
+                    <tr>
+                        <td>{{ attempt["topic"] }}</td>
+                        <td>{{ attempt["difficulty"] }}</td>
+                        <td>{{ attempt["score"] }}/{{ attempt["total_questions"] }}</td>
+                        <td>{{ attempt["percentage"] }}%</td>
+                        <td>{{ attempt["attempted_at"] }}</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        {% else %}
+        <p>You haven't attempted any quizzes yet. Start your first quiz!</p>
+        {% endif %}
+
+        <a class="dashboard-quiz-button" href="{{ url_for('main.home') }}">Take Another Quiz</a>
+    </main>
+</body>
+</html>

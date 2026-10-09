@@ -1,14 +1,15 @@
 # Python
 __pycache__/
-*.pyc
-*.pyo
-*.pyd
+*.py[cod]
 *.egg-info/
 venv/
 env/
 .venv/
-**/.env
+
+# Environment variables and secrets
 .env
+**/.env
+
 # IDE
 .vscode/
 .idea/
@@ -20,5 +21,11 @@ Thumbs.db
 # Docker
 .dockerinit
 
-# Project specific
+# Flask instance data
 instance/
+
+# Testing
+.pytest_cache/
+
+# Local database (contains user accounts and quiz history)
+quiz_app.db

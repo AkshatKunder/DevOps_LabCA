@@ -1,0 +1,35 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Create Account | AI Quiz</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+</head>
+<body>
+    <main class="auth-container">
+        <h1>Create Account</h1>
+
+        {% for category, message in get_flashed_messages(with_categories=true) %}
+            <p class="flash {{ category }}">{{ message }}</p>
+        {% endfor %}
+
+        <form method="POST" action="{{ url_for('auth.register') }}">
+            <label for="username">Username</label>
+            <input id="username" name="username" required maxlength="80">
+
+            <label for="email">Email</label>
+            <input id="email" name="email" type="email" required maxlength="254">
+
+            <label for="password">Password (at least 8 characters)</label>
+            <input id="password" name="password" type="password" minlength="8" required>
+
+            <button type="submit">Register</button>
+        </form>
+
+        <p>Already have an account?
+            <a href="{{ url_for('auth.login') }}">Log in</a>
+        </p>
+    </main>
+</body>
+</html>

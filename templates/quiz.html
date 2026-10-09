@@ -17,24 +17,23 @@
         <h2>{{ difficulty }} Difficulty — Answer all questions</h2>
         <form action="/result" method="POST">
             {% for question in quiz %}
+                {% set question_index = loop.index0 %}
                 <div class="question-card">
                     <h3>{{ loop.index }}. {{ question.question }}</h3>
                     {% for option in question.options %}
-                        <label class="option-label">
+                        <label class="option">
                             <input
                                 type="radio"
-                                name="question_{{ loop.index0 }}"
+                                name="question_{{ question_index }}"
                                 value="{{ loop.index0 }}"
                                 required
                             >
                             {{ option }}
                         </label>
-                        <br>
                     {% endfor %}
                 </div>
             {% endfor %}
-            <br>
-            <button type="submit">Submit Quiz</button>
+            <button type="submit" class="submit-quiz">Submit Quiz</button>
         </form>
     </main>
     <footer>
