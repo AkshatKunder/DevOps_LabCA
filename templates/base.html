@@ -6,9 +6,14 @@
   <meta name="description" content="QuizGenius — AI-powered quizzes for mastering DevOps concepts.">
   <title>{% block title %}QuizGenius{% endblock %}</title>
   <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+  {% if chat_mode %}<link rel="stylesheet" href="{{ url_for('static', filename='css/loanease.css') }}">{% endif %}
   <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>⚡</text></svg>">
 </head>
 <body>
+
+{% if chat_mode %}
+  {% block chat_content %}{% endblock %}
+{% else %}
 
 <!-- Mobile sidebar overlay -->
 <div class="sidebar-overlay" id="sidebarOverlay"></div>
@@ -122,6 +127,7 @@
 
   </div><!-- /page-wrapper -->
 </div><!-- /app-shell -->
+{% endif %}
 
 <script src="{{ url_for('static', filename='js/script.js') }}"></script>
 {% block extra_js %}{% endblock %}
