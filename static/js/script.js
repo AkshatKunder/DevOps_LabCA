@@ -1,4 +1,4 @@
-/* QuizForge AI UI interactions */
+/* QuizGenius UI interactions */
 
 // ── Sidebar toggle (mobile) ──────────────────────────────────
 const sidebar  = document.getElementById('sidebar');

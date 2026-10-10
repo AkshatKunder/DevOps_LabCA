@@ -156,7 +156,7 @@ def test_homepage_returns_200(client):
 
 def test_homepage_contains_title(client):
     response = client.get("/")
-    assert b"AI-Powered Online Quiz" in response.data
+    assert b"QuizGenius" in response.data
 
 
 def test_logged_out_user_cannot_access_dashboard(anonymous_client):
