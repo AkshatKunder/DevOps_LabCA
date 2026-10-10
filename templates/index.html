@@ -1,49 +1,412 @@
 {% extends "base.html" %}
 
-{% block title %}LoanEase | Your loan assistant{% endblock %}
+{% block title %}Topics & Quiz | QuizGenius{% endblock %}
+{% block page_title %}Topics &amp; Quiz{% endblock %}
+{% block breadcrumb %}Take a Quiz{% endblock %}
 
-{% block chat_content %}
-<div class="loanease-app">
-  <header class="loan-header">
-    <a class="loan-brand" href="{{ url_for('main.home') }}" aria-label="LoanEase home"><span class="loan-brand-mark">₹</span><span>LoanEase</span></a>
-    <div class="loan-header-actions">
-      <button class="loan-icon-button" type="button" title="Your application summary" aria-label="Your application summary">↗</button>
-      <button class="loan-icon-button" type="button" title="Settings" aria-label="Settings">⚙</button>
-      <button class="loan-icon-button notification" type="button" title="Notifications" aria-label="Notifications">♢<span></span></button>
-      <form method="POST" action="{{ url_for('auth.logout') }}"><button class="loan-icon-button" type="submit" title="Log out" aria-label="Log out">↪</button></form>
-    </div>
-  </header>
+{% block content %}
 
-  <main class="loan-main">
-    <aside class="loan-sidebar" aria-label="Loan context">
-      <section class="loan-side-section eligibility-card">
-        <p class="side-eyebrow">Pre-approved offer</p><div class="approval-line"><strong>APPROVED</strong><span>✓</span></div>
-        <p class="approved-amount">₹5,00,000</p><div class="limit-meter"><i></i></div><p class="muted-copy">Up to 60 months · No collateral</p>
-        <div class="side-data"><span>CIBIL score <b>720</b></span><span>Tier <b class="success-text">GOOD</b></span><span>Available tenure <b>24–60 mo</b></span></div>
-      </section>
-      <section class="loan-side-section"><h2>Your rate</h2><div class="rate-row"><span>Base MCLR</span><b>8.85%</b></div><div class="rate-row"><span>Risk spread <small>🔒</small></span><b>1.00%</b></div><div class="rate-row"><span>Tenure adjustment</span><b>-0.25%</b></div><div class="rate-final"><span>Final rate</span><strong>9.85%</strong></div></section>
-      <section class="loan-side-section activity-section"><h2>Recent activity</h2><ul><li><span>✓</span><div>KYC verified<small>2h ago</small></div></li><li><span>✓</span><div>Credit assessment complete<small>4h ago</small></div></li><li><span>✓</span><div>Documents uploaded<small>6h ago</small></div></li></ul></section>
-      <button class="quick-tip" id="tipButton" type="button"><span>💡</span><span id="tipText">Rate lock is guaranteed for 30 days.</span></button>
-    </aside>
-
-    <section class="chat-panel" aria-label="LoanEase assistant">
-      <div class="messages" id="messages" aria-live="polite">
-        <section class="chat-empty" id="emptyState">
-          <div class="empty-icon">💼</div><h1>Welcome to LoanEase</h1><p>Your personal assistant for clear, confident borrowing decisions.</p>
-          <div class="suggestion-grid">
-            <button type="button" data-prompt="What is my interest rate?">What is my interest rate?</button>
-            <button type="button" data-prompt="Calculate my EMI">Calculate my EMI</button>
-            <button type="button" data-prompt="Am I eligible for a loan?">Check my eligibility</button>
-            <button type="button" data-prompt="How can I improve my CIBIL score?">Improve my CIBIL score</button>
-          </div>
-        </section>
-      </div>
-      <form class="chat-composer" id="chatForm">
-        <label class="composer-box" for="chatInput"><button type="button" class="composer-icon" aria-label="Voice input" title="Voice input">♬</button><input id="chatInput" autocomplete="off" maxlength="500" placeholder="Ask about your loan, rates, or EMI…"><button type="button" class="composer-icon" aria-label="Attach document" title="Attach document">＋</button></label>
-        <button class="send-button" id="sendButton" type="submit" aria-label="Send message">➜</button>
-      </form>
-      <p class="chat-disclaimer">LoanEase provides estimates for guidance. Final terms are subject to verification.</p>
-    </section>
-  </main>
+<!-- Loading overlay (shown during quiz generation) -->
+<div class="loading-overlay" id="loadingOverlay" role="status" aria-live="polite">
+  <div class="spinner spinner-dark" style="width:40px;height:40px;border-width:4px;" aria-hidden="true"></div>
+  <div class="loading-text">Generating your quiz…</div>
+  <div class="loading-sub">Our AI is crafting personalised questions. This takes a few seconds.</div>
 </div>
+
+<!-- Quiz Setup Card -->
+<div class="quiz-setup-container">
+
+  <div class="quiz-setup-card">
+
+    <!-- Card hero -->
+    <div class="quiz-setup-hero">
+      <div class="quiz-setup-hero-icon" aria-hidden="true">
+        <!-- BrainCircuit / Sparkles icon -->
+        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="white" stroke-width="1.8">
+          <path d="M12 2a5 5 0 0 1 5 5v1h1a3 3 0 0 1 0 6h-1v1a5 5 0 0 1-10 0v-1H6a3 3 0 0 1 0-6h1V7a5 5 0 0 1 5-5z"/>
+          <path d="M10 10h4M10 14h4"/>
+        </svg>
+      </div>
+      <h1 class="quiz-setup-title">QuizGenius</h1>
+      <p class="quiz-setup-sub">Your intelligent practice space for mastering DevOps, one focused quiz at a time.</p>
+    </div>
+
+    <!-- Setup form -->
+    <form class="quiz-setup-form" action="/generate" method="POST" id="quizForm" novalidate>
+
+      <!-- Topic input -->
+      <div class="form-group">
+        <label class="form-label" for="topic">Quiz Topic</label>
+        <input
+          id="topic"
+          name="topic"
+          type="text"
+          class="form-control"
+          placeholder="e.g. CI/CD Pipelines, Docker, Kubernetes…"
+          required
+          maxlength="120"
+          autocomplete="off"
+          autofocus
+        >
+        <!-- Quick-pick chips -->
+        <div class="topic-chips" aria-label="Quick topic suggestions">
+          <button type="button" class="topic-chip" data-topic="DevOps Fundamentals">DevOps Fundamentals</button>
+          <button type="button" class="topic-chip" data-topic="Git and Version Control">Git &amp; Version Control</button>
+          <button type="button" class="topic-chip" data-topic="CI/CD Pipelines">CI/CD Pipelines</button>
+          <button type="button" class="topic-chip" data-topic="Docker and Containers">Docker &amp; Containers</button>
+          <button type="button" class="topic-chip" data-topic="Kubernetes Orchestration">Kubernetes</button>
+          <button type="button" class="topic-chip" data-topic="Infrastructure as Code">Infrastructure as Code</button>
+          <button type="button" class="topic-chip" data-topic="Monitoring and Logging">Monitoring &amp; Logging</button>
+          <button type="button" class="topic-chip" data-topic="Testing and Quality Assurance">Testing &amp; QA</button>
+        </div>
+      </div>
+
+      <!-- Difficulty -->
+      <div class="form-group">
+        <span class="form-label" id="difficultyLabel">Difficulty Level</span>
+        <div class="difficulty-grid" role="radiogroup" aria-labelledby="difficultyLabel">
+
+          <div class="difficulty-option">
+            <input type="radio" name="difficulty" id="diff-easy" value="Easy" checked>
+            <label class="difficulty-label" for="diff-easy">
+              <span class="difficulty-emoji">🌱</span>
+              <span class="difficulty-name">Easy</span>
+              <span class="difficulty-hint">Core concepts</span>
+            </label>
+          </div>
+
+          <div class="difficulty-option">
+            <input type="radio" name="difficulty" id="diff-medium" value="Medium">
+            <label class="difficulty-label" for="diff-medium">
+              <span class="difficulty-emoji">⚡</span>
+              <span class="difficulty-name">Medium</span>
+              <span class="difficulty-hint">Applied knowledge</span>
+            </label>
+          </div>
+
+          <div class="difficulty-option">
+            <input type="radio" name="difficulty" id="diff-hard" value="Hard">
+            <label class="difficulty-label" for="diff-hard">
+              <span class="difficulty-emoji">🔥</span>
+              <span class="difficulty-name">Hard</span>
+              <span class="difficulty-hint">Expert level</span>
+            </label>
+          </div>
+
+        </div>
+      </div>
+
+      <!-- Submit -->
+      <button type="submit" class="btn btn-primary btn-full btn-lg" id="generateBtn">
+        <!-- Sparkles icon -->
+        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+          <polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/>
+        </svg>
+        Generate Quiz
+      </button>
+
+    </form>
+  </div><!-- /quiz-setup-card -->
+
+  <!-- Topic suggestions section -->
+  <div class="section-header" style="margin-top: var(--space-10);">
+    <h2 class="section-title">
+      <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"
+           style="width:20px;height:20px;display:inline-block;vertical-align:middle;margin-right:8px;color:var(--primary)">
+        <path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"/><path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"/>
+      </svg>
+      DevOps Topic Catalog
+    </h2>
+  </div>
+
+  <div class="topics-grid">
+
+    <!-- DevOps Fundamentals -->
+    <div class="topic-card">
+      <div class="topic-card-header">
+        <div class="topic-icon" style="background:#EEF2FF;">
+          <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="#4F46E5" stroke-width="2">
+            <circle cx="12" cy="12" r="10"/>
+            <polyline points="12 6 12 12 16 14"/>
+          </svg>
+        </div>
+        <span class="badge badge-success">Beginner</span>
+      </div>
+      <div>
+        <div class="topic-name">DevOps Fundamentals</div>
+        <p class="topic-desc">Culture, CALMS framework, toolchains, and core DevOps principles.</p>
+      </div>
+      <div class="topic-meta">
+        <span class="topic-meta-item">
+          <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+            <circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/>
+          </svg>
+          ~5 min
+        </span>
+        <span class="topic-meta-item">
+          <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+            <path d="M9 11l3 3L22 4"/>
+          </svg>
+          5 questions
+        </span>
+      </div>
+      <div class="topic-footer">
+        <button type="button" class="btn btn-primary btn-full topic-chip" data-topic="DevOps Fundamentals">
+          Start Quiz
+        </button>
+      </div>
+    </div>
+
+    <!-- Git & Version Control -->
+    <div class="topic-card">
+      <div class="topic-card-header">
+        <div class="topic-icon" style="background:#FEF3C7;">
+          <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="#D97706" stroke-width="2">
+            <circle cx="18" cy="18" r="3"/><circle cx="6" cy="6" r="3"/><circle cx="6" cy="18" r="3"/>
+            <path d="M6 9v3a6 6 0 0 0 6 6h.5M18 6v3"/>
+          </svg>
+        </div>
+        <span class="badge badge-success">Beginner</span>
+      </div>
+      <div>
+        <div class="topic-name">Git &amp; Version Control</div>
+        <p class="topic-desc">Branching strategies, merge vs rebase, Git workflows, and history management.</p>
+      </div>
+      <div class="topic-meta">
+        <span class="topic-meta-item">
+          <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+            <circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/>
+          </svg>
+          ~5 min
+        </span>
+        <span class="topic-meta-item">
+          <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+            <path d="M9 11l3 3L22 4"/>
+          </svg>
+          5 questions
+        </span>
+      </div>
+      <div class="topic-footer">
+        <button type="button" class="btn btn-primary btn-full topic-chip" data-topic="Git and Version Control">
+          Start Quiz
+        </button>
+      </div>
+    </div>
+
+    <!-- CI/CD Pipelines -->
+    <div class="topic-card">
+      <div class="topic-card-header">
+        <div class="topic-icon" style="background:#D1FAE5;">
+          <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="#059669" stroke-width="2">
+            <polyline points="16 18 22 12 16 6"/><polyline points="8 6 2 12 8 18"/>
+          </svg>
+        </div>
+        <span class="badge badge-warning">Intermediate</span>
+      </div>
+      <div>
+        <div class="topic-name">CI/CD Pipelines</div>
+        <p class="topic-desc">Continuous integration and delivery concepts, Jenkins, GitHub Actions, and GitLab CI.</p>
+      </div>
+      <div class="topic-meta">
+        <span class="topic-meta-item">
+          <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+            <circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/>
+          </svg>
+          ~5 min
+        </span>
+        <span class="topic-meta-item">
+          <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+            <path d="M9 11l3 3L22 4"/>
+          </svg>
+          5 questions
+        </span>
+      </div>
+      <div class="topic-footer">
+        <button type="button" class="btn btn-primary btn-full topic-chip" data-topic="CI/CD Pipelines">
+          Start Quiz
+        </button>
+      </div>
+    </div>
+
+    <!-- Docker & Containers -->
+    <div class="topic-card">
+      <div class="topic-card-header">
+        <div class="topic-icon" style="background:#E0F2FE;">
+          <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="#0284C7" stroke-width="2">
+            <rect x="2" y="7" width="20" height="14" rx="2"/><path d="M16 7V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v2"/>
+            <line x1="12" y1="12" x2="12" y2="16"/><line x1="10" y1="14" x2="14" y2="14"/>
+          </svg>
+        </div>
+        <span class="badge badge-warning">Intermediate</span>
+      </div>
+      <div>
+        <div class="topic-name">Docker &amp; Containers</div>
+        <p class="topic-desc">Container basics, Dockerfiles, multi-stage builds, networking, and volumes.</p>
+      </div>
+      <div class="topic-meta">
+        <span class="topic-meta-item">
+          <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+            <circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/>
+          </svg>
+          ~5 min
+        </span>
+        <span class="topic-meta-item">
+          <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+            <path d="M9 11l3 3L22 4"/>
+          </svg>
+          5 questions
+        </span>
+      </div>
+      <div class="topic-footer">
+        <button type="button" class="btn btn-primary btn-full topic-chip" data-topic="Docker and Containers">
+          Start Quiz
+        </button>
+      </div>
+    </div>
+
+    <!-- Kubernetes -->
+    <div class="topic-card">
+      <div class="topic-card-header">
+        <div class="topic-icon" style="background:#F3E8FF;">
+          <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="#7C3AED" stroke-width="2">
+            <circle cx="12" cy="12" r="3"/>
+            <path d="M6.34 17.66 4.93 19.07M17.66 6.34l1.41-1.41M6.34 6.34 4.93 4.93M17.66 17.66l1.41 1.41"/>
+            <path d="M12 2v3M12 19v3M2 12h3M19 12h3"/>
+          </svg>
+        </div>
+        <span class="badge badge-error">Advanced</span>
+      </div>
+      <div>
+        <div class="topic-name">Kubernetes Orchestration</div>
+        <p class="topic-desc">Pods, deployments, services, ingress, ConfigMaps, scaling, and cluster management.</p>
+      </div>
+      <div class="topic-meta">
+        <span class="topic-meta-item">
+          <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+            <circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/>
+          </svg>
+          ~5 min
+        </span>
+        <span class="topic-meta-item">
+          <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+            <path d="M9 11l3 3L22 4"/>
+          </svg>
+          5 questions
+        </span>
+      </div>
+      <div class="topic-footer">
+        <button type="button" class="btn btn-primary btn-full topic-chip" data-topic="Kubernetes Orchestration">
+          Start Quiz
+        </button>
+      </div>
+    </div>
+
+    <!-- Monitoring & Logging -->
+    <div class="topic-card">
+      <div class="topic-card-header">
+        <div class="topic-icon" style="background:#FEE2E2;">
+          <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="#DC2626" stroke-width="2">
+            <polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/>
+          </svg>
+        </div>
+        <span class="badge badge-warning">Intermediate</span>
+      </div>
+      <div>
+        <div class="topic-name">Monitoring &amp; Logging</div>
+        <p class="topic-desc">Prometheus, Grafana, ELK Stack, alerting, and observability best practices.</p>
+      </div>
+      <div class="topic-meta">
+        <span class="topic-meta-item">
+          <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+            <circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/>
+          </svg>
+          ~5 min
+        </span>
+        <span class="topic-meta-item">
+          <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+            <path d="M9 11l3 3L22 4"/>
+          </svg>
+          5 questions
+        </span>
+      </div>
+      <div class="topic-footer">
+        <button type="button" class="btn btn-primary btn-full topic-chip" data-topic="Monitoring and Logging">
+          Start Quiz
+        </button>
+      </div>
+    </div>
+
+    <!-- Infrastructure as Code -->
+    <div class="topic-card">
+      <div class="topic-card-header">
+        <div class="topic-icon" style="background:#D1FAE5;">
+          <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="#059669" stroke-width="2">
+            <polyline points="4 17 10 11 4 5"/><line x1="12" y1="19" x2="20" y2="19"/>
+          </svg>
+        </div>
+        <span class="badge badge-error">Advanced</span>
+      </div>
+      <div>
+        <div class="topic-name">Infrastructure as Code</div>
+        <p class="topic-desc">Terraform, Ansible, CloudFormation, configuration management, and IaC best practices.</p>
+      </div>
+      <div class="topic-meta">
+        <span class="topic-meta-item">
+          <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+            <circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/>
+          </svg>
+          ~5 min
+        </span>
+        <span class="topic-meta-item">
+          <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+            <path d="M9 11l3 3L22 4"/>
+          </svg>
+          5 questions
+        </span>
+      </div>
+      <div class="topic-footer">
+        <button type="button" class="btn btn-primary btn-full topic-chip" data-topic="Infrastructure as Code">
+          Start Quiz
+        </button>
+      </div>
+    </div>
+
+    <!-- Testing & QA -->
+    <div class="topic-card">
+      <div class="topic-card-header">
+        <div class="topic-icon" style="background:#FEF3C7;">
+          <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="#D97706" stroke-width="2">
+            <path d="M9 3H5a2 2 0 0 0-2 2v4m6-6h10a2 2 0 0 1 2 2v4M9 3v18m0 0h10a2 2 0 0 0 2-2V9M9 21H5a2 2 0 0 1-2-2V9m0 0h18"/>
+          </svg>
+        </div>
+        <span class="badge badge-warning">Intermediate</span>
+      </div>
+      <div>
+        <div class="topic-name">Testing &amp; Quality Assurance</div>
+        <p class="topic-desc">Unit, integration, E2E testing, TDD, BDD, test automation, and shift-left testing.</p>
+      </div>
+      <div class="topic-meta">
+        <span class="topic-meta-item">
+          <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+            <circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/>
+          </svg>
+          ~5 min
+        </span>
+        <span class="topic-meta-item">
+          <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+            <path d="M9 11l3 3L22 4"/>
+          </svg>
+          5 questions
+        </span>
+      </div>
+      <div class="topic-footer">
+        <button type="button" class="btn btn-primary btn-full topic-chip" data-topic="Testing and Quality Assurance">
+          Start Quiz
+        </button>
+      </div>
+    </div>
+
+  </div><!-- /topics-grid -->
+</div><!-- /quiz-setup-container -->
+
 {% endblock %}

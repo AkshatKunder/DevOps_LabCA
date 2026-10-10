@@ -19,8 +19,8 @@ def _format_answer(index, options):
 @main.route("/")
 @login_required
 def home():
-    """Display the LoanEase financial assistant."""
-    return render_template("index.html", chat_mode=True)
+    """Display the quiz generation form."""
+    return render_template("index.html")
 
 
 @main.route("/generate", methods=["POST"])
