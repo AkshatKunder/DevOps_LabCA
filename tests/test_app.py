@@ -351,3 +351,191 @@ def test_users_only_see_their_own_quiz_history(client, test_db):
 def test_result_without_session_redirects(client):
     response = client.post("/result")
     assert response.status_code == 302
+
+
+@patch("app.routes.generate_quiz")
+def test_result_stores_valid_duration(mock_generate_quiz, client):
+    mock_generate_quiz.return_value = SAMPLE_QUIZ
+
+    client.post(
+        "/generate",
+        data={"topic": "Timed Topic", "difficulty": "Easy"},
+    )
+
+    response = client.post(
+        "/result",
+        data={
+            "question_0": "2",
+            "question_1": "1",
+            "question_2": "1",
+            "question_3": "3",
+            "question_4": "1",
+            "duration_seconds": "95",
+        },
+    )
+    assert response.status_code == 200
+    # Scoring is unchanged by the informational duration metadata.
+    assert b"Score: 5 / 5" in response.data
+    # Duration is displayed as MM:SS on the results page.
+    assert b"01:35" in response.data
+    assert b"Time taken" in response.data
+
+    conn = database.get_db()
+    attempt = conn.execute(
+        "SELECT duration_seconds FROM quiz_attempts WHERE topic = ?",
+        ("Timed Topic",),
+    ).fetchone()
+    conn.close()
+
+    assert attempt is not None
+    assert attempt["duration_seconds"] == 95
+
+
+@patch("app.routes.generate_quiz")
+def test_result_without_duration_renders_normally(mock_generate_quiz, client):
+    mock_generate_quiz.return_value = SAMPLE_QUIZ
+
+    client.post(
+        "/generate",
+        data={"topic": "No Timer Topic", "difficulty": "Easy"},
+    )
+
+    response = client.post(
+        "/result",
+        data={
+            "question_0": "2",
+            "question_1": "1",
+            "question_2": "1",
+            "question_3": "3",
+            "question_4": "1",
+        },
+    )
+    assert response.status_code == 200
+    assert b"Score: 5 / 5" in response.data
+    assert b"Time taken" not in response.data
+
+    conn = database.get_db()
+    attempt = conn.execute(
+        "SELECT duration_seconds FROM quiz_attempts WHERE topic = ?",
+        ("No Timer Topic",),
+    ).fetchone()
+    conn.close()
+
+    assert attempt is not None
+    assert attempt["duration_seconds"] is None
+
+
+@patch("app.routes.generate_quiz")
+def test_result_rejects_invalid_duration_without_changing_score(
+    mock_generate_quiz, client
+):
+    mock_generate_quiz.return_value = SAMPLE_QUIZ
+
+    for bad_value in ("not-a-number", "-30", "99999999"):
+        topic = f"Bad Duration {bad_value}"
+        client.post(
+            "/generate",
+            data={"topic": topic, "difficulty": "Easy"},
+        )
+
+        response = client.post(
+            "/result",
+            data={
+                "question_0": "2",
+                "question_1": "1",
+                "question_2": "1",
+                "question_3": "3",
+                "question_4": "1",
+                "duration_seconds": bad_value,
+            },
+        )
+        assert response.status_code == 200
+        assert b"Score: 5 / 5" in response.data
+        assert b"Time taken" not in response.data
+
+        conn = database.get_db()
+        attempt = conn.execute(
+            "SELECT duration_seconds FROM quiz_attempts WHERE topic = ?",
+            (topic,),
+        ).fetchone()
+        conn.close()
+
+        assert attempt is not None
+        assert attempt["duration_seconds"] is None
+
+
+@patch("app.routes.generate_quiz")
+def test_result_displays_long_duration_as_hours(mock_generate_quiz, client):
+    mock_generate_quiz.return_value = SAMPLE_QUIZ
+
+    client.post(
+        "/generate",
+        data={"topic": "Long Quiz", "difficulty": "Hard"},
+    )
+
+    response = client.post(
+        "/result",
+        data={
+            "question_0": "2",
+            "question_1": "1",
+            "question_2": "1",
+            "question_3": "3",
+            "question_4": "1",
+            "duration_seconds": "3700",
+        },
+    )
+    assert response.status_code == 200
+    assert b"01:01:40" in response.data
+
+
+def test_init_db_migrates_old_schema_without_losing_history(test_db):
+    import sqlite3
+
+    conn = sqlite3.connect(test_db)
+    conn.execute("DROP TABLE IF EXISTS quiz_attempts")
+    conn.execute(
+        """
+        CREATE TABLE quiz_attempts (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            user_id INTEGER NOT NULL,
+            topic TEXT NOT NULL,
+            difficulty TEXT NOT NULL,
+            score INTEGER NOT NULL,
+            total_questions INTEGER NOT NULL,
+            percentage REAL NOT NULL,
+            attempted_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+            FOREIGN KEY (user_id) REFERENCES users(id)
+        )
+        """
+    )
+    conn.execute(
+        """
+        INSERT INTO quiz_attempts
+            (user_id, topic, difficulty, score, total_questions, percentage)
+        VALUES (?, ?, ?, ?, ?, ?)
+        """,
+        (1, "Legacy Topic", "Easy", 3, 5, 60.0),
+    )
+    conn.commit()
+    conn.close()
+
+    database.init_db()
+
+    conn = database.get_db()
+    columns = [
+        row["name"]
+        for row in conn.execute(
+            "PRAGMA table_info(quiz_attempts)"
+        ).fetchall()
+    ]
+    assert "duration_seconds" in columns
+
+    row = conn.execute(
+        "SELECT * FROM quiz_attempts WHERE topic = ?",
+        ("Legacy Topic",),
+    ).fetchone()
+    conn.close()
+
+    assert row is not None
+    assert row["score"] == 3
+    assert row["duration_seconds"] is None

@@ -38,5 +38,17 @@ def init_db():
         )
     """)
 
+    # Backward-compatible migration: add duration_seconds to
+    # pre-existing databases without recreating data.
+    columns = {
+        row["name"]
+        for row in conn.execute("PRAGMA table_info(quiz_attempts)").fetchall()
+    }
+    if "duration_seconds" not in columns:
+        conn.execute(
+            "ALTER TABLE quiz_attempts "
+            "ADD COLUMN duration_seconds INTEGER NULL"
+        )
+
     conn.commit()
     conn.close()

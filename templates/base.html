@@ -3,127 +3,158 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <meta name="description" content="DevOps Academy — AI-powered quiz platform for mastering DevOps concepts.">
-  <title>{% block title %}DevOps Academy{% endblock %}</title>
+  <meta name="description" content="QuizForge AI - AI-powered quiz platform for mastering DevOps concepts.">
+  <title>{% block title %}QuizForge AI{% endblock %}</title>
   <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
-  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>⚡</text></svg>">
+  <script>
+  // Apply saved theme early to avoid a flash of the wrong theme.
+  // Explicit saved choice first, otherwise system preference.
+  (function() {
+    try {
+      var saved = localStorage.getItem('quizforge-theme');
+      var theme = saved;
+      if (theme !== 'light' && theme !== 'dark') {
+        theme = (window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches) ? 'dark' : 'light';
+      }
+      document.documentElement.setAttribute('data-theme', theme);
+    } catch (e) {
+      document.documentElement.setAttribute('data-theme', 'light');
+    }
+  })();
+  </script>
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Crect width='100' height='100' rx='22' fill='%23007A45'/%3E%3Cpath d='M50 18 75 30v17c0 17-10 30-25 35C35 77 25 64 25 47V30l25-12Z' fill='white'/%3E%3Cpath d='m50 33 5 10 11 2-8 8 2 11-10-5-10 5 2-11-8-8 11-2 5-10Z' fill='%23007A45'/%3E%3C/svg%3E">
 </head>
 <body>
 
-<!-- Mobile sidebar overlay -->
-<div class="sidebar-overlay" id="sidebarOverlay"></div>
+<!-- ── Navigation Bar ─────────────────────────────────────────── -->
+<nav class="navbar" role="navigation" aria-label="Main navigation">
+  <div class="navbar-inner">
+    <!-- Brand -->
+    <a href="{{ url_for('main.home') }}" class="navbar-brand">
+      <!-- Shield/star brand mark -->
+      <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+        <path d="M12 3 20 7v5c0 5.2-3.2 8.6-8 10-4.8-1.4-8-4.8-8-10V7l8-4Z"/>
+        <path d="m12 8 1.2 2.5 2.8.4-2 2 .5 2.8L12 14.4l-2.5 1.3.5-2.8-2-2 2.8-.4L12 8Z"/>
+      </svg>
+      QuizForge AI
+    </a>
 
-<div class="app-shell">
-
-  <!-- ── Sidebar ──────────────────────────────────────────── -->
-  <aside class="sidebar" id="sidebar" role="navigation" aria-label="Main navigation">
-
-    <!-- Logo -->
-    <div class="sidebar-logo">
-      <div class="sidebar-logo-icon" aria-hidden="true">
-        <!-- Terminal icon -->
-        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2" color="white">
-          <polyline points="4 17 10 11 4 5"/><line x1="12" y1="19" x2="20" y2="19"/>
-        </svg>
-      </div>
-      <div class="sidebar-logo-text">
-        <span class="sidebar-logo-title">DevOps Academy</span>
-        <span class="sidebar-logo-sub">Theory IA</span>
-      </div>
+    <!-- Navigation Links -->
+    <div class="navbar-nav">
+      <a href="{{ url_for('main.home') }}"
+         class="nav-link {% if request.endpoint in ['main.home', 'main.generate'] %}active{% endif %}">
+        Home
+      </a>
+      <a href="{{ url_for('main.dashboard') }}"
+         class="nav-link {% if request.endpoint == 'main.dashboard' %}active{% endif %}">
+        My Dashboard
+      </a>
     </div>
 
-    <!-- Navigation -->
-    <nav class="sidebar-nav" aria-label="Sidebar">
-      <span class="sidebar-section-label">Main</span>
-
-      <a href="{{ url_for('main.dashboard') }}"
-         class="nav-item {% if request.endpoint == 'main.dashboard' %}active{% endif %}"
-         aria-current="{% if request.endpoint == 'main.dashboard' %}page{% endif %}">
-        <!-- LayoutDashboard icon -->
-        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
-          <rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/>
-          <rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/>
+    <!-- Right side: Theme toggle + User -->
+    <div class="navbar-right">
+      <!-- Theme Toggle -->
+      <button class="theme-toggle" id="themeToggle" aria-label="Toggle dark mode" title="Toggle dark mode">
+        <!-- Sun icon (shown in dark mode) -->
+        <svg class="sun-icon" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2" style="display:none;">
+          <circle cx="12" cy="12" r="5"/><path d="M12 1v2M12 21v2M4.22 4.22l1.42 1.42M18.36 18.36l1.42 1.42M1 12h2M21 12h2M4.22 19.78l1.42-1.42M18.36 5.64l1.42-1.42"/>
         </svg>
-        Dashboard
-      </a>
-
-      <a href="{{ url_for('main.home') }}"
-         class="nav-item {% if request.endpoint in ['main.home', 'main.generate'] %}active{% endif %}"
-         aria-current="{% if request.endpoint in ['main.home', 'main.generate'] %}page{% endif %}">
-        <!-- BookOpen icon -->
-        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
-          <path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"/><path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"/>
+        <!-- Moon icon (shown in light mode) -->
+        <svg class="moon-icon" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+          <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/>
         </svg>
-        Topics & Quiz
-      </a>
+      </button>
 
-      <span class="sidebar-section-label">Learning</span>
-
-      <a href="{{ url_for('main.dashboard') }}#history"
-         class="nav-item">
-        <!-- BarChart3 icon -->
-        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
-          <line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/>
-          <line x1="6" y1="20" x2="6" y2="14"/>
-        </svg>
-        My Progress
-      </a>
-
-    </nav>
-
-    <!-- User + Logout -->
-    <div class="sidebar-bottom">
-      <div class="sidebar-user">
-        <div class="user-avatar" aria-hidden="true">
-          {{ current_user.username[0].upper() if current_user.is_authenticated else '?' }}
-        </div>
-        <div class="user-info">
-          <div class="user-name">{{ current_user.username if current_user.is_authenticated else 'Guest' }}</div>
-          <div class="user-role">Learner</div>
-        </div>
+      {% if current_user.is_authenticated %}
+        <!-- Logout -->
         <form method="POST" action="{{ url_for('auth.logout') }}" style="margin:0;">
-          <button type="submit" class="sidebar-logout-btn" title="Log out" aria-label="Log out">
-            <!-- LogOut icon -->
+          <button type="submit" class="btn btn-sm btn-ghost" title="Log out">
             <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
               <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/>
               <polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/>
             </svg>
           </button>
         </form>
-      </div>
+      {% endif %}
     </div>
+  </div>
+</nav>
 
-  </aside>
-
-  <!-- ── Main area ─────────────────────────────────────────── -->
-  <div class="page-wrapper">
-
-    <!-- Topbar -->
-    <header class="topbar">
-      <div class="topbar-left">
-        <button class="mobile-menu-btn" id="mobileMenuBtn" aria-label="Open navigation menu" aria-expanded="false">
-          <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
-            <line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="6" x2="21" y2="6"/>
-            <line x1="3" y1="18" x2="21" y2="18"/>
-          </svg>
-        </button>
-        <span class="topbar-title">{% block page_title %}Dashboard{% endblock %}</span>
-        <span class="topbar-breadcrumb">DevOps Academy / {% block breadcrumb %}Home{% endblock %}</span>
-      </div>
-      <div class="topbar-right">
-        {% block topbar_actions %}{% endblock %}
-      </div>
-    </header>
-
-    <!-- Page content -->
-    <main class="page-content" id="main-content">
-      {% block content %}{% endblock %}
-    </main>
-
-  </div><!-- /page-wrapper -->
-</div><!-- /app-shell -->
+<!-- ── Page Content ─────────────────────────────────────────── -->
+{% if current_user.is_authenticated %}
+<div class="page">
+{% else %}
+<div class="page-auth">
+{% endif %}
+  {% block content %}{% endblock %}
+</div>
 
 <script src="{{ url_for('static', filename='js/script.js') }}"></script>
+<script>
+// Theme toggle: explicit saved choice first, otherwise system preference.
+(function() {
+  var STORAGE_KEY = 'quizforge-theme';
+  var root = document.documentElement;
+  var themeToggle = document.getElementById('themeToggle');
+  var sunIcon = themeToggle ? themeToggle.querySelector('.sun-icon') : null;
+  var moonIcon = themeToggle ? themeToggle.querySelector('.moon-icon') : null;
+
+  function systemTheme() {
+    return (window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches) ? 'dark' : 'light';
+  }
+
+  function currentTheme() {
+    var t = root.getAttribute('data-theme');
+    return (t === 'light' || t === 'dark') ? t : systemTheme();
+  }
+
+  function applyTheme(theme) {
+    root.setAttribute('data-theme', theme);
+    updateIcons(theme);
+    if (themeToggle) {
+      themeToggle.setAttribute('aria-label', theme === 'light' ? 'Switch to dark mode' : 'Switch to light mode');
+      themeToggle.setAttribute('title', theme === 'light' ? 'Switch to dark mode' : 'Switch to light mode');
+    }
+  }
+
+  function updateIcons(theme) {
+    if (sunIcon && moonIcon) {
+      if (theme === 'dark') {
+        sunIcon.style.display = 'block';
+        moonIcon.style.display = 'none';
+      } else {
+        sunIcon.style.display = 'none';
+        moonIcon.style.display = 'block';
+      }
+    }
+  }
+
+  // Sync with the early head script (saved choice, else system).
+  applyTheme(currentTheme());
+
+  // Follow system changes only while the user has no explicit saved choice.
+  if (window.matchMedia) {
+    var mq = window.matchMedia('(prefers-color-scheme: dark)');
+    var onSystemChange = function(e) {
+      try {
+        if (!localStorage.getItem(STORAGE_KEY)) {
+          applyTheme(e.matches ? 'dark' : 'light');
+        }
+      } catch (err) { /* ignore */ }
+    };
+    if (mq.addEventListener) { mq.addEventListener('change', onSystemChange); }
+    else if (mq.addListener) { mq.addListener(onSystemChange); }
+  }
+
+  if (themeToggle) {
+    themeToggle.addEventListener('click', function() {
+      var next = currentTheme() === 'light' ? 'dark' : 'light';
+      try { localStorage.setItem(STORAGE_KEY, next); } catch (err) { /* ignore */ }
+      applyTheme(next);
+    });
+  }
+})();
+</script>
 {% block extra_js %}{% endblock %}
 </body>
 </html>

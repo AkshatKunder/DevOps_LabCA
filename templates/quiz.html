@@ -1,11 +1,8 @@
 {% extends "base.html" %}
 
-{% block title %}Quiz: {{ topic }} | DevOps Academy{% endblock %}
-{% block page_title %}{{ topic }}{% endblock %}
-{% block breadcrumb %}Topics &amp; Quiz / Active Quiz{% endblock %}
+{% block title %}Quiz: {{ topic }} | QuizForge AI{% endblock %}
 
 {% block content %}
-
 <div class="quiz-container">
 
   <!-- Quiz header card (progress) -->
@@ -14,8 +11,7 @@
       <div class="quiz-title-group">
         <div class="quiz-page-title">{{ topic }}</div>
         <div class="quiz-subtitle">
-          {% if difficulty == "Easy" %}🌱{% elif difficulty == "Medium" %}⚡{% else %}🔥{% endif %}
-          {{ difficulty }} Difficulty &nbsp;·&nbsp;
+          {{ difficulty }} Difficulty &nbsp;-&nbsp;
           <span class="badge badge-primary">AI-Generated</span>
         </div>
       </div>
@@ -23,6 +19,16 @@
         {{ quiz | length }} Questions
       </span>
     </div>
+    <!-- Count-up stopwatch (informational only; never auto-submits) -->
+    <div class="quiz-timer" role="timer" aria-label="Time elapsed">
+      <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2" aria-hidden="true"
+           style="width:16px;height:16px;display:inline-block;vertical-align:-3px;margin-right:6px;color:var(--brand)">
+        <circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/>
+      </svg>
+      <span class="quiz-timer-label">Time elapsed</span>
+      <span class="quiz-timer-value" id="stopwatch">00:00</span>
+    </div>
+    <span class="visually-hidden" aria-live="polite" id="stopwatchStatus"></span>
     <!-- Progress bar (filled with JS as user answers) -->
     <div class="progress-bar-track" role="progressbar" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0" id="progressBar" aria-label="Quiz completion progress">
       <div class="progress-bar-fill" id="progressFill" style="width: 0%;"></div>
@@ -30,7 +36,8 @@
   </div>
 
   <!-- Quiz form -->
-  <form action="/result" method="POST" id="resultForm" novalidate>
+  <form action="{{ url_for('main.result') }}" method="POST" id="resultForm" novalidate>
+    <input type="hidden" name="duration_seconds" id="durationInput" value="">
 
     {% for question in quiz %}
       {% set question_index = loop.index0 %}
@@ -97,6 +104,97 @@
 {% endblock %}
 
 {% block extra_js %}
+<script>
+  // Count-up stopwatch: starts when the quiz is presented, not on the
+  // generation form. Derived from a stored start timestamp so tab
+  // sleep/visibility changes stay accurate. Informational only.
+  (function () {
+    var quizId = {{ (quiz_id | default('')) | tojson }};
+    if (!quizId) { quizId = 'legacy'; }
+    var STORAGE_PREFIX = 'quizforge-stopwatch-';
+    var storageKey = STORAGE_PREFIX + quizId;
+    var stopwatchEl = document.getElementById('stopwatch');
+    var durationInput = document.getElementById('durationInput');
+    var statusEl = document.getElementById('stopwatchStatus');
+    var lastAnnouncedMinute = -1;
+
+    function readStart() {
+      try {
+        // Drop stale timers from other quiz sessions so a new quiz
+        // can never inherit the previous timer.
+        for (var i = sessionStorage.length - 1; i >= 0; i--) {
+          var k = sessionStorage.key(i);
+          if (k && k.indexOf(STORAGE_PREFIX) === 0 && k !== storageKey) {
+            sessionStorage.removeItem(k);
+          }
+        }
+        var raw = sessionStorage.getItem(storageKey);
+        var start = raw ? parseInt(raw, 10) : NaN;
+        if (!isNaN(start) && start > 0 && start <= Date.now()) {
+          return start;
+        }
+        start = Date.now();
+        sessionStorage.setItem(storageKey, String(start));
+        return start;
+      } catch (e) {
+        return Date.now();
+      }
+    }
+
+    var startTime = readStart();
+
+    function formatElapsed(totalSeconds) {
+      var hours = Math.floor(totalSeconds / 3600);
+      var minutes = Math.floor((totalSeconds % 3600) / 60);
+      var seconds = totalSeconds % 60;
+      function pad(n) { return (n < 10 ? '0' : '') + n; }
+      if (hours > 0) {
+        return pad(hours) + ':' + pad(minutes) + ':' + pad(seconds);
+      }
+      return pad(minutes) + ':' + pad(seconds);
+    }
+
+    function elapsedSeconds() {
+      return Math.max(0, Math.floor((Date.now() - startTime) / 1000));
+    }
+
+    function tick() {
+      var elapsed = elapsedSeconds();
+      if (stopwatchEl) { stopwatchEl.textContent = formatElapsed(elapsed); }
+      if (durationInput) { durationInput.value = String(elapsed); }
+      // Restrained screen-reader announcements: once per minute.
+      if (statusEl) {
+        var minute = Math.floor(elapsed / 60);
+        if (minute !== lastAnnouncedMinute) {
+          lastAnnouncedMinute = minute;
+          statusEl.textContent = 'Time elapsed ' + formatElapsed(elapsed);
+        }
+      }
+    }
+
+    tick();
+    var intervalId = window.setInterval(tick, 1000);
+    document.addEventListener('visibilitychange', tick);
+    window.addEventListener('pageshow', function() { startTime = readStart(); tick(); });
+
+    function clearTimer() {
+      try { sessionStorage.removeItem(storageKey); } catch (e) { /* ignore */ }
+      if (intervalId) { window.clearInterval(intervalId); }
+    }
+
+    var form = document.getElementById('resultForm');
+    if (form) {
+      form.addEventListener('submit', function() {
+        tick();
+        clearTimer();
+      });
+    }
+    // Cancellation / new quiz must not keep timer state.
+    document.querySelectorAll('a[href="{{ url_for('main.home') }}"]').forEach(function(link) {
+      link.addEventListener('click', clearTimer);
+    });
+  }());
+</script>
 <script>
   // Progress bar: update as user selects answers
   (function () {

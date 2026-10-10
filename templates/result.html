@@ -1,11 +1,8 @@
 {% extends "base.html" %}
 
-{% block title %}Results: {{ topic }} | DevOps Academy{% endblock %}
-{% block page_title %}Quiz Results{% endblock %}
-{% block breadcrumb %}Topics &amp; Quiz / Results{% endblock %}
+{% block title %}Results: {{ topic }} | QuizForge AI{% endblock %}
 
 {% block content %}
-
 <div class="result-container">
 
   <!-- Score Hero Card -->
@@ -20,7 +17,7 @@
           id="scoreRingFill"
           cx="70" cy="70" r="54"
           data-pct="{{ percentage }}"
-          style="stroke: var(--primary); stroke-dasharray: 339.3; stroke-dashoffset: 339.3;"
+          style="stroke: var(--brand); stroke-dasharray: 339.3; stroke-dashoffset: 339.3;"
         />
       </svg>
       <div class="score-label">
@@ -31,20 +28,20 @@
     </div>
 
     <!-- Machine-readable score (also satisfies test assertions) -->
-    <p class="visually-hidden" aria-live="polite">Score: {{ score }} / {{ total }} &mdash; {{ percentage }}%</p>
+    <p class="visually-hidden" aria-live="polite">Score: {{ score }} / {{ total }} - {{ percentage }}%</p>
 
     <!-- Title + subtitle -->
     {% if percentage >= 80 %}
-      <h1 class="score-title">Outstanding! 🏆</h1>
+      <h1 class="score-title">Outstanding!</h1>
       <p class="score-subtitle">Excellent mastery of <strong>{{ topic }}</strong> at {{ difficulty }} level.</p>
     {% elif percentage >= 60 %}
-      <h1 class="score-title">Good Work! ⚡</h1>
+      <h1 class="score-title">Good Work!</h1>
       <p class="score-subtitle">Solid understanding of <strong>{{ topic }}</strong>. Keep pushing!</p>
     {% elif percentage >= 40 %}
-      <h1 class="score-title">Keep Practising 📚</h1>
+      <h1 class="score-title">Keep Practising</h1>
       <p class="score-subtitle">You're making progress on <strong>{{ topic }}</strong>. Review the explanations below.</p>
     {% else %}
-      <h1 class="score-title">Don't Give Up! 💪</h1>
+      <h1 class="score-title">Don't Give Up!</h1>
       <p class="score-subtitle">Challenging topic. Review the answers and try <strong>{{ topic }}</strong> again.</p>
     {% endif %}
 
@@ -55,7 +52,7 @@
         <div class="score-stat-label">Correct</div>
       </div>
       <div class="score-stat">
-        <div class="score-stat-value" style="color: var(--error);">{{ total - score }}</div>
+        <div class="score-stat-value" style="color: var(--danger);">{{ total - score }}</div>
         <div class="score-stat-label">Incorrect</div>
       </div>
       <div class="score-stat">
@@ -63,13 +60,17 @@
         <div class="score-stat-label">Total</div>
       </div>
       <div class="score-stat">
-        <div class="score-stat-value" style="color: var(--primary);">
-          {% if difficulty == "Easy" %}🌱
-          {% elif difficulty == "Medium" %}⚡
-          {% else %}🔥{% endif %}
+        <div class="score-stat-value" style="color: var(--brand);">
+          {{ difficulty }}
         </div>
-        <div class="score-stat-label">{{ difficulty }}</div>
+        <div class="score-stat-label">Difficulty</div>
       </div>
+      {% if duration_display %}
+      <div class="score-stat">
+        <div class="score-stat-value" style="color: var(--brand);">{{ duration_display }}</div>
+        <div class="score-stat-label">Time taken</div>
+      </div>
+      {% endif %}
     </div>
 
     <!-- Actions -->
@@ -98,7 +99,7 @@
   <h2 class="review-section-title">
     <!-- ClipboardList icon -->
     <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"
-         style="width:20px;height:20px;display:inline-block;vertical-align:middle;margin-right:8px;color:var(--primary)">
+         style="width:20px;height:20px;display:inline-block;vertical-align:middle;margin-right:8px;color:var(--brand)">
       <path d="M9 5H7a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V7a2 2 0 0 0-2-2h-2"/>
       <rect x="9" y="3" width="6" height="4" rx="1"/>
       <line x1="9" y1="12" x2="15" y2="12"/><line x1="9" y1="16" x2="11" y2="16"/>

@@ -1,4 +1,4 @@
-/* DevOps Academy — UI interactions */
+/* QuizForge AI UI interactions */
 
 // ── Sidebar toggle (mobile) ──────────────────────────────────
 const sidebar  = document.getElementById('sidebar');
@@ -47,7 +47,7 @@ if (quizForm) {
     const btn = this.querySelector('button[type="submit"]');
     if (btn) {
       btn.disabled = true;
-      btn.innerHTML = '<span class="spinner"></span> Generating quiz…';
+      btn.innerHTML = '<span class="spinner"></span> Generating quiz...';
     }
   });
 }
@@ -85,7 +85,7 @@ if (resultForm) {
     const btn = this.querySelector('button[type="submit"]');
     if (btn) {
       btn.disabled = true;
-      btn.innerHTML = '<span class="spinner"></span> Submitting…';
+      btn.innerHTML = '<span class="spinner"></span> Submitting...';
     }
   });
 }
