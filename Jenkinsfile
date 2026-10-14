@@ -11,7 +11,7 @@ pipeline {
 
        stage('Build') {
     steps {
-        bat 'python -m pip install -r requirements.txt'
+        bat '"C:\\Users\\aksha\\AppData\\Local\\Programs\\Python\\Python311\\python.exe" -m pip install -r requirements.txt'
     }
 }
 
