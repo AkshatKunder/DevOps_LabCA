@@ -15,9 +15,15 @@ pipeline {
     }
 }
 
-stage('Test') {
+stage('Unit Tests') {
     steps {
-        bat '"C:\\Users\\aksha\\AppData\\Local\\Programs\\Python\\Python311\\python.exe" -m pytest tests/'
+        bat '"C:\\Users\\aksha\\AppData\\Local\\Programs\\Python\\Python311\\python.exe" -m pytest tests/test_app.py -v'
+    }
+}
+
+stage('Integration Tests') {
+    steps {
+        bat '"C:\\Users\\aksha\\AppData\\Local\\Programs\\Python\\Python311\\python.exe" -m pytest tests/test_integration.py -v'
     }
 }
 
