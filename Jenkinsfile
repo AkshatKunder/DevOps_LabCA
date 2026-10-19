@@ -36,7 +36,8 @@ stage('SonarQube Analysis') {
                     -e SONAR_HOST_URL=%SONAR_HOST_URL% ^
                     -e SONAR_TOKEN=%SONAR_TOKEN% ^
                     -v "%WORKSPACE%:/usr/src" ^
-                    sonarsource/sonar-scanner-cli:12.2.0.4256_8.1.0
+                    sonarsource/sonar-scanner-cli:12.2.0.4256_8.1.0 ^
+                    -Dsonar.working.directory=/usr/src/.scannerwork
             '''
         }
     }
