@@ -55,7 +55,7 @@ stage('SonarQube Quality Gate') {
 
         stage('Docker Build') {
             steps {
-                bat 'docker build -t %IMAGE_NAME%:%BUILD_NUMBER% -t %IMAGE_NAME%:latest .'
+                bat 'docker build --pull --no-cache -t %IMAGE_NAME%:%BUILD_NUMBER% -t %IMAGE_NAME%:latest .'
             }
         }
 

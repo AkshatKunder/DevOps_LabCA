@@ -29,14 +29,21 @@ The project definition is in `sonar-project.properties`. It analyzes `app/` and 
 
 ## Trivy image scanning
 
-The Jenkins pipeline builds the deployment image, saves that exact image to a tar archive, and scans the archive with the official `aquasec/trivy:0.58.1` image. This avoids granting the scanner access to the Docker socket or to unrelated containers.
+The Jenkins pipeline builds the deployment image without using cached layers, saves that exact image to a tar archive, and scans the archive with the official `aquasec/trivy:0.58.1` image. This avoids granting the scanner access to the Docker socket or to unrelated containers.
+
+The Dockerfile installs available Debian security updates during every build and
+updates `setuptools` (whose prior release vendors these packages),
+`jaraco.context`, and `wheel` to tested remediated versions. Debian advisories
+that report no fixed version cannot be resolved by `apt-get upgrade`; they
+remain subject to a fresh Trivy scan until Debian publishes a fix or the base
+image no longer contains the affected package.
 
 The scan always writes `trivy-report.json` for Jenkins to archive and prints a table report. It fails the pipeline when an OS-package or Python-library vulnerability is rated `HIGH` or `CRITICAL`; lower-severity findings remain visible in the JSON report but do not block deployment.
 
 To reproduce it locally without starting or replacing the application container:
 
 ```powershell
-docker build -t quizgenius:local .
+docker build --pull --no-cache -t quizgenius:local .
 docker save quizgenius:local -o quizgenius-image.tar
 $projectPath = (Get-Location).Path
 docker run --rm --mount "type=bind,source=$projectPath,target=/workspace" aquasec/trivy:0.58.1 image --input /workspace/quizgenius-image.tar --scanners vuln --severity HIGH,CRITICAL --format json --output /workspace/trivy-report.json --exit-code 0
