@@ -27,5 +27,10 @@ instance/
 # Testing
 .pytest_cache/
 
+# Local quality/security scanner output
+.scannerwork/
+trivy-report.json
+quizgenius-image.tar
+
 # Local database (contains user accounts and quiz history)
 quiz_app.db
