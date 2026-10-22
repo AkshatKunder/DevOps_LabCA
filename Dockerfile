@@ -6,11 +6,17 @@ COPY requirements.txt .
 # Pull in available Alpine security updates before installing application
 # packages. The pinned stable Alpine branch is supported through June 2028.
 RUN apk upgrade --no-cache \
-    && python -m pip install --no-cache-dir --upgrade \
+    && python -m pip install --no-cache-dir \
+        --retries 5 \
+        --timeout 120 \
+        --upgrade \
         "setuptools==82.0.1" \
         "jaraco.context>=6.1.0" \
         "wheel>=0.46.2" \
-    && python -m pip install --no-cache-dir -r requirements.txt
+    && python -m pip install --no-cache-dir \
+        --retries 5 \
+        --timeout 120 \
+        -r requirements.txt
 
 COPY . .
 
